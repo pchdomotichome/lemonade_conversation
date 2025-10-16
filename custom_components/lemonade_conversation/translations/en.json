@@ -1,1 +1,49 @@
-
+{
+    "title": "Lemonade Conversation",
+    "config": {
+      "step": {
+        "user": {
+          "title": "Connect to Lemonade Server",
+          "description": "Enter your Lemonade Server base URL (OpenAI-compatible) and optional API Key.",
+          "data": {
+            "base_url": "Base URL (e.g. http://lemonade_server:8000/api/v1)",
+            "api_key": "API Key (if any)",
+            "verify_ssl": "Verify SSL",
+            "endpoint": "Preferred endpoint"
+          }
+        },
+        "model": {
+          "title": "Select model",
+          "data": {
+            "model": "Model"
+          }
+        }
+      },
+      "error": {
+        "conn": "Failed to connect to Lemonade Server.",
+        "auth": "Authentication failed (invalid API Key).",
+        "no_models": "No available models found."
+      }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Lemonade Conversation Options",
+          "data": {
+            "agent_name": "Assistant name",
+            "system_prompt": "System prompt",
+            "temperature": "Temperature",
+            "top_p": "Top P",
+            "max_tokens": "Max output tokens",
+            "max_history": "Memory per conversation (turns)",
+            "enable_tools": "Enable tools to control devices",
+            "allowed_domains": "Allowed domains",
+            "tool_iteration_limit": "Tool iteration limit",
+            "timeout": "Request timeout (s)",
+            "stream": "Enable streaming (only chat/completions and no tools)",
+            "endpoint": "Preferred endpoint"
+          }
+        }
+      }
+    }
+  }
