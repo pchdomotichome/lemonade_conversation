@@ -1,98 +1,79 @@
-import asyncio
+"""Helper functions for Lemonade Conversation."""
+import json
 from typing import Dict, List, Any
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.template import Template
-import langdetect
+from langdetect import detect, LangDetectException
 
 def detect_language(text: str) -> str:
-    """Detecta el idioma del texto."""
+    """Detect the language of the text."""
     try:
-        return langdetect.detect(text)
-    except:
+        return detect(text)
+    except LangDetectException:
         return "en"
 
-def get_home_assistant_tools(hass: HomeAssistant) -> List[Dict[str, Any]]:
-    """Obtiene las herramientas disponibles en Home Assistant."""
-    tools = []
-    
-    tools.append({
-        "type": "function",
-        "function": {
-            "name": "get_device_state",
-            "description": "Obtener el estado de un dispositivo",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "entity_id": {
-                        "type": "string",
-                        "description": "ID del dispositivo"
-                    }
+def get_home_assistant_tools() -> List[Dict[str, Any]]:
+    """Get the tool definitions for Home Assistant."""
+    return [
+        {
+            "type": "function",
+            "function": {
+                "name": "get_device_state",
+                "description": "Get the state of a specific device or entity.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"entity_id": {"type": "string", "description": "The ID of the entity."}},
+                    "required": ["entity_id"],
                 },
-                "required": ["entity_id"]
-            }
-        }
-    })
-    
-    tools.append({
-        "type": "function",
-        "function": {
-            "name": "turn_on_device",
-            "description": "Encender un dispositivo",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "entity_id": {
-                        "type": "string",
-                        "description": "ID del dispositivo"
-                    }
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "turn_on_device",
+                "description": "Turn on a device or a group of devices.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"entity_id": {"type": "string", "description": "The ID of the entity to turn on."}},
+                    "required": ["entity_id"],
                 },
-                "required": ["entity_id"]
-            }
-        }
-    })
-    
-    tools.append({
-        "type": "function",
-        "function": {
-            "name": "turn_off_device",
-            "description": "Apagar un dispositivo",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "entity_id": {
-                        "type": "string",
-                        "description": "ID del dispositivo"
-                    }
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "turn_off_device",
+                "description": "Turn off a device or a group of devices.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"entity_id": {"type": "string", "description": "The ID of the entity to turn off."}},
+                    "required": ["entity_id"],
                 },
-                "required": ["entity_id"]
-            }
-        }
-    })
-    
-    return tools
+            },
+        },
+    ]
 
-async def execute_tool(hass: HomeAssistant, tool_name: str, arguments: Dict[str, Any]) -> str:
-    """Ejecuta una herramienta específica."""
+async def execute_tool_call(hass: HomeAssistant, tool_name: str, arguments: Dict[str, Any]) -> str:
+    """Execute a tool call and return the result as a string."""
     try:
+        entity_id = arguments.get("entity_id")
+        if not entity_id:
+            return json.dumps({"error": "entity_id is required"})
+
         if tool_name == "get_device_state":
-            entity_id = arguments.get("entity_id")
             state = hass.states.get(entity_id)
             if state:
-                return f"Estado de {entity_id}: {state.state}"
-            else:
-                return f"Dispositivo {entity_id} no encontrado"
-                
+                return json.dumps({"entity_id": entity_id, "state": state.state, "attributes": state.attributes})
+            return json.dumps({"error": f"Entity {entity_id} not found."})
+
         elif tool_name == "turn_on_device":
-            entity_id = arguments.get("entity_id")
-            await hass.services.async_call("homeassistant", "turn_on", {"entity_id": entity_id})
-            return f"Dispositivo {entity_id} encendido"
-            
+            await hass.services.async_call("homeassistant", "turn_on", {"entity_id": entity_id}, blocking=True)
+            return json.dumps({"success": True, "message": f"Device {entity_id} has been turned on."})
+
         elif tool_name == "turn_off_device":
-            entity_id = arguments.get("entity_id")
-            await hass.services.async_call("homeassistant", "turn_off", {"entity_id": entity_id})
-            return f"Dispositivo {entity_id} apagado"
-            
+            await hass.services.async_call("homeassistant", "turn_off", {"entity_id": entity_id}, blocking=True)
+            return json.dumps({"success": True, "message": f"Device {entity_id} has been turned off."})
+
         else:
-            return f"Herramienta {tool_name} no reconocida"
+            return json.dumps({"error": f"Tool {tool_name} is not recognized."})
     except Exception as e:
-        return f"Error ejecutando herramienta: {str(e)}"
+        return json.dumps({"error": f"Error executing tool {tool_name}: {str(e)}"})
