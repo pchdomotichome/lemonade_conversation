@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "base_url": "URL Base del Servidor Lemonade",
+          "api_key": "Clave API (opcional)",
+          "model": "Modelo LLM",
+          "prompt_template": "Plantilla de Prompt",
+          "max_tokens": "Máximo de Tokens",
+          "temperature": "Temperatura",
+          "tools_enabled": "Habilitar Herramientas"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Ya está configurado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "model": "Modelo LLM",
+          "prompt_template": "Plantilla de Prompt",
+          "max_tokens": "Máximo de Tokens",
+          "temperature": "Temperatura",
+          "tools_enabled": "Habilitar Herramientas"
+        }
+      }
+    }
+  }
+}

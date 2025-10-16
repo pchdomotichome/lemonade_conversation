@@ -1,0 +1,10 @@
+{
+  "domain": "lemonade_conversation",
+  "name": "Lemonade Conversation",
+  "version": "1.1.0",
+  "documentation": "https://github.com/pchdomotichome/lemonade_conversation",
+  "dependencies": ["http", "conversation"],
+  "codeowners": ["@pchdomotichome"],
+  "requirements": ["langdetect>=1.0.9"],
+  "iot_class": "local_push"
+}

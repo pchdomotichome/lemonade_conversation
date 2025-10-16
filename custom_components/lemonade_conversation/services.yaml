@@ -1,0 +1,9 @@
+process_text:
+  description: Procesar texto con el asistente Lemonade.
+  fields:
+    text:
+      description: Texto a procesar.
+      example: ¿Qué temperatura hay ahora?
+    conversation_id:
+      description: ID de conversación para mantener contexto.
+      example: "conv_123"
