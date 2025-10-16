@@ -2,30 +2,33 @@
   "config": {
     "step": {
       "user": {
+        "title": "Lemonade Conversation Setup",
+        "description": "Connect to your local Lemonade Server.",
         "data": {
-          "base_url": "URL Base del Servidor Lemonade",
-          "api_key": "Clave API (opcional)",
-          "model": "Modelo LLM",
-          "prompt_template": "Plantilla de Prompt",
-          "max_tokens": "Máximo de Tokens",
-          "temperature": "Temperatura",
-          "tools_enabled": "Habilitar Herramientas"
+          "base_url": "Base URL",
+          "api_key": "API Key (Optional)",
+          "model": "Model Name",
+          "prompt_template": "Prompt Template",
+          "max_tokens": "Max Tokens",
+          "temperature": "Temperature",
+          "tools_enabled": "Enable Home Assistant Tools"
         }
       }
     },
     "abort": {
-      "already_configured": "Ya está configurado."
+      "already_configured": "This Lemonade Server is already configured."
     }
   },
   "options": {
     "step": {
       "init": {
+        "title": "Lemonade Conversation Options",
         "data": {
-          "model": "Modelo LLM",
-          "prompt_template": "Plantilla de Prompt",
-          "max_tokens": "Máximo de Tokens",
-          "temperature": "Temperatura",
-          "tools_enabled": "Habilitar Herramientas"
+          "model": "Model Name",
+          "prompt_template": "Prompt Template",
+          "max_tokens": "Max Tokens",
+          "temperature": "Temperature",
+          "tools_enabled": "Enable Home Assistant Tools"
         }
       }
     }
