@@ -1,34 +1,47 @@
 {
+  "title": "Lemonade Conversation",
   "config": {
     "step": {
       "user": {
-        "title": "Lemonade Conversation Setup",
-        "description": "Connect to your local Lemonade Server.",
+        "title": "Conectar a Lemonade Server",
+        "description": "Introduce la URL base de tu Lemonade Server (OpenAI compatible) y (opcional) tu API Key.",
         "data": {
-          "base_url": "Base URL",
-          "api_key": "API Key (Optional)",
-          "model": "Model Name",
-          "prompt_template": "Prompt Template",
-          "max_tokens": "Max Tokens",
-          "temperature": "Temperature",
-          "tools_enabled": "Enable Home Assistant Tools"
+          "base_url": "Base URL (p. ej. http://lemonade_server:8000/api/v1)",
+          "api_key": "API Key (si aplica)",
+          "verify_ssl": "Verificar SSL",
+          "endpoint": "Endpoint preferido"
+        }
+      },
+      "model": {
+        "title": "Selecciona el modelo",
+        "data": {
+          "model": "Modelo"
         }
       }
     },
-    "abort": {
-      "already_configured": "This Lemonade Server is already configured."
+    "error": {
+      "conn": "No se pudo conectar con Lemonade Server.",
+      "auth": "Autenticación fallida (API Key incorrecta).",
+      "no_models": "No se encontraron modelos disponibles."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Lemonade Conversation Options",
+        "title": "Opciones de Lemonade Conversation",
         "data": {
-          "model": "Model Name",
-          "prompt_template": "Prompt Template",
-          "max_tokens": "Max Tokens",
+          "agent_name": "Nombre del asistente",
+          "system_prompt": "System prompt",
           "temperature": "Temperature",
-          "tools_enabled": "Enable Home Assistant Tools"
+          "top_p": "Top P",
+          "max_tokens": "Max tokens de salida",
+          "max_history": "Memoria por conversación (turnos)",
+          "enable_tools": "Habilitar herramientas para controlar dispositivos",
+          "allowed_domains": "Dominios permitidos",
+          "tool_iteration_limit": "Límite de iteraciones de herramientas",
+          "timeout": "Timeout de petición (s)",
+          "stream": "Habilitar streaming (solo chat/completions y sin tools)",
+          "endpoint": "Endpoint preferido"
         }
       }
     }
