@@ -11,11 +11,14 @@ DEFAULT_MODEL = "gpt-3.5-turbo"
 DEFAULT_NAME = "Lemonade Assistant"
 DEFAULT_MAX_TOKENS = 150
 DEFAULT_TEMPERATURE = 0.7
-DEFAULT_PROMPT_TEMPLATE = """Eres un asistente inteligente para el hogar. Responde de forma clara y concisa.
-Contexto actual:
+DEFAULT_PROMPT_TEMPLATE = """You are a helpful and concise home assistant.
+The user is speaking {{ language }}.
+Current context from Home Assistant:
 {%- for state in states.sensor -%}
-{{ state.name }}: {{ state.state }} {{ state.attributes.unit_of_measurement or '' }}
+  {%- if loop.index < 10 %}
+    {{ state.name }}: {{ state.state }} {{ state.attributes.unit_of_measurement or '' }}
+  {%- endif -%}
 {%- endfor %}
 
-Usuario: {{ user_input }}
-Asistente:"""
+User: {{ user_input }}
+Assistant:"""
