@@ -8,8 +8,7 @@ CONF_TEMPERATURE = "temperature"
 CONF_TOOLS_ENABLED = "tools_enabled"
 
 DEFAULT_MODEL = "gpt-3.5-turbo"
-DEFAULT_NAME = "Lemonade Assistant"
-DEFAULT_MAX_TOKENS = 150
+DEFAULT_MAX_TOKENS = 256
 DEFAULT_TEMPERATURE = 0.7
 DEFAULT_PROMPT_TEMPLATE = """You are a helpful and concise home assistant.
 The user is speaking {{ language }}.
