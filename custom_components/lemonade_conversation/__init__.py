@@ -3,6 +3,7 @@ from __future__ import annotations
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
+from homeassistant.helpers.event import async_call_later
 
 from .const import DOMAIN
 
@@ -14,10 +15,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN] = {}
 
     async def _update_listener(updated_entry: ConfigEntry) -> None:
-        await hass.config_entries.async_reload(updated_entry.entry_id)
+        # Importante: recargar en background y con un pequeño retraso
+        # para no interferir con el cierre del Options Flow (evita "Unknown error").
+        def _do_reload(_now) -> None:
+            hass.async_create_task(hass.config_entries.async_reload(updated_entry.entry_id))
+
+        async_call_later(hass, 1.0, _do_reload)
 
     entry.async_on_unload(entry.add_update_listener(_update_listener))
     hass.data[DOMAIN][entry.entry_id] = {}
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
