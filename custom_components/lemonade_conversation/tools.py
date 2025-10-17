@@ -9,7 +9,6 @@ from homeassistant.helpers import area_registry as ar, device_registry as dr, en
 
 
 def build_tools_schema() -> list[dict[str, Any]]:
-    """Devuelve esquemas JSON Schema compatibles con OpenAI tools."""
     return [
         {
             "type": "function",
@@ -23,11 +22,12 @@ def build_tools_schema() -> list[dict[str, Any]]:
             "type": "function",
             "function": {
                 "name": "list_entities",
-                "description": "Lista entidades, con área, dominio, friendly_name y estado actual.",
+                "description": "Lista entidades con área, dominio, friendly_name y estado.",
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "domain": {"type": "string", "description": "Filtra por dominio (light, switch, climate, etc.)."}
+                        "domain": {"type": "string", "description": "Filtra por dominio (light, switch, climate, etc.)."},
+                        "area": {"type": "string", "description": "Nombre o ID de área para filtrar (opcional)."}
                     },
                     "additionalProperties": False,
                 },
@@ -60,6 +60,7 @@ def build_tools_schema() -> list[dict[str, Any]]:
                         "service": {"type": "string", "description": "Ej.: turn_on, turn_off, set_temperature."},
                         "entity_id": {"type": "string", "description": "Una entidad o lista separada por comas"},
                         "area_id": {"type": "string", "description": "Area id si aplica"},
+                        "area_name": {"type": "string", "description": "Nombre de área (se convertirá a area_id)"},
                         "device_id": {"type": "string", "description": "Device id si aplica"},
                         "data": {"type": "object", "description": "Datos adicionales del servicio"},
                     },
@@ -89,7 +90,6 @@ async def exec_tool_call(
     allowed_domains: list[str],
     context: Context | None = None,
 ) -> str:
-    """Ejecuta una tool y devuelve un string (JSON) como resultado."""
     try:
         args = json.loads(arguments_json) if isinstance(arguments_json, str) else (arguments_json or {})
     except Exception:
@@ -105,6 +105,19 @@ async def exec_tool_call(
 
     if tool_name == "list_entities":
         domain_filter = args.get("domain")
+        area_filter = args.get("area")
+        area_id_filter = None
+
+        if isinstance(area_filter, str) and area_filter:
+            area_obj = ar_reg.async_get_area(area_filter)
+            if area_obj:
+                area_id_filter = area_obj.id
+            else:
+                for a in ar_reg.async_list_areas():
+                    if a.name.lower() == area_filter.lower():
+                        area_id_filter = a.id
+                        break
+
         items = []
         for ent in er_reg.entities.values():
             if ent.disabled_by:
@@ -114,15 +127,21 @@ async def exec_tool_call(
             state = hass.states.get(ent.entity_id)
             if state is None:
                 continue
-            area_name = None
-            if ent.area_id:
-                area = ar_reg.async_get_area(ent.area_id)
-                area_name = area.name if area else None
-            elif ent.device_id:
+
+            ent_area_id = ent.area_id
+            if not ent_area_id and ent.device_id:
                 device = dr_reg.async_get(ent.device_id)
                 if device and device.area_id:
-                    area = ar_reg.async_get_area(device.area_id)
-                    area_name = area.name if area else None
+                    ent_area_id = device.area_id
+
+            if area_id_filter and ent_area_id != area_id_filter:
+                continue
+
+            area_name = None
+            if ent_area_id:
+                area = ar_reg.async_get_area(ent_area_id)
+                area_name = area.name if area else None
+
             items.append(
                 {
                     "entity_id": ent.entity_id,
@@ -150,6 +169,7 @@ async def exec_tool_call(
         service = args.get("service")
         entity_id = args.get("entity_id")
         area_id = args.get("area_id")
+        area_name = args.get("area_name")
         device_id = args.get("device_id")
         data = args.get("data") or {}
 
@@ -158,6 +178,15 @@ async def exec_tool_call(
 
         if not _is_domain_allowed(domain, allowed_domains):
             return json.dumps({"error": f"Dominio no permitido: {domain}"}, ensure_ascii=False)
+
+        if area_name and not area_id:
+            found = None
+            for a in ar_reg.async_list_areas():
+                if a.name.lower() == str(area_name).lower():
+                    found = a
+                    break
+            if found:
+                area_id = found.id
 
         target: dict[str, Any] | None = None
         entity_ids = _split_entities(entity_id)
