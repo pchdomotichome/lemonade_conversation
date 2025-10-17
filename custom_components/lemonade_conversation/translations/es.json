@@ -1,49 +1,88 @@
 {
-    "title": "Lemonade Conversation",
-    "config": {
-      "step": {
-        "user": {
-          "title": "Conectar a Lemonade Server",
-          "description": "Introduce la URL base de tu Lemonade Server (OpenAI compatible) y (opcional) tu API Key.",
-          "data": {
-            "base_url": "URL base (p. ej. http://lemonade_server:8000/api/v1)",
-            "api_key": "API Key (si aplica)",
-            "verify_ssl": "Verificar SSL",
-            "endpoint": "Endpoint preferido"
-          }
-        },
-        "model": {
-          "title": "Selecciona el modelo",
-          "data": {
-            "model": "Modelo"
-          }
+  "title": "Lemonade Conversation",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conectar a Lemonade Server",
+        "description": "URL base (compatible con OpenAI) y API Key si aplica.",
+        "data": {
+          "base_url": "URL base (p. ej. http://lemonade_server:8000/api/v1)",
+          "api_key": "API Key (opcional)",
+          "verify_ssl": "Verificar SSL",
+          "endpoint": "Endpoint preferido"
         }
       },
-      "error": {
-        "conn": "No se pudo conectar con Lemonade Server.",
-        "auth": "Autenticación fallida (API Key incorrecta).",
-        "no_models": "No se encontraron modelos disponibles."
+      "model": {
+        "title": "Selecciona el modelo",
+        "data": {
+          "model": "Modelo (id — recipe)"
+        }
       }
     },
-    "options": {
-      "step": {
-        "init": {
-          "title": "Opciones de Lemonade Conversation",
-          "data": {
-            "agent_name": "Nombre del asistente",
-            "system_prompt": "System prompt",
-            "temperature": "Temperature",
-            "top_p": "Top P",
-            "max_tokens": "Max tokens de salida",
-            "max_history": "Memoria por conversación (turnos)",
-            "enable_tools": "Habilitar herramientas para controlar dispositivos",
-            "allowed_domains": "Dominios permitidos",
-            "tool_iteration_limit": "Límite de iteraciones de herramientas",
-            "timeout": "Timeout de petición (s)",
-            "stream": "Habilitar streaming (solo chat/completions y sin tools)",
-            "endpoint": "Endpoint preferido"
-          }
+    "error": {
+      "conn": "No se pudo conectar con Lemonade Server.",
+      "auth": "Autenticación fallida (API Key incorrecta).",
+      "no_models": "No se encontraron modelos disponibles."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de Lemonade Conversation",
+        "menu_options": {
+          "general": "General",
+          "control": "Control y Tools",
+          "icl": "ICL (In-Context Learning)",
+          "prompt": "Prompt y Estilo",
+          "advanced": "Avanzado"
+        }
+      },
+      "general": {
+        "title": "General",
+        "data": {
+          "model": "Modelo",
+          "endpoint": "Endpoint preferido",
+          "agent_name": "Nombre del asistente"
+        }
+      },
+      "control": {
+        "title": "Control y Tools",
+        "data": {
+          "control_mode": "Modo de control",
+          "enable_tools": "Habilitar tools (control de dispositivos)",
+          "model_supports_tools": "El modelo soporta tools (manual)",
+          "tool_follow_up_mode": "Respuesta tras tool (direct/llm)",
+          "allowed_domains": "Dominios permitidos (tools)",
+          "tool_iteration_limit": "Límite de iteraciones de tools"
+        }
+      },
+      "icl": {
+        "title": "ICL (In-Context Learning)",
+        "data": {
+          "enable_icl": "Habilitar ICL (ejemplos few-shot)",
+          "icl_max_examples": "Ejemplos a inyectar por turno",
+          "icl_auto_capture": "Capturar ejemplos automáticamente",
+          "icl_clear": "Borrar ejemplos almacenados"
+        }
+      },
+      "prompt": {
+        "title": "Prompt y Estilo",
+        "data": {
+          "system_prompt": "System prompt",
+          "refresh_system_every_turn": "Reenviar system prompt en cada turno"
+        }
+      },
+      "advanced": {
+        "title": "Avanzado",
+        "data": {
+          "temperature": "Creatividad (temperature)",
+          "top_p": "Diversidad (top_p)",
+          "max_tokens": "Máx. tokens de salida",
+          "max_history": "Memoria por conversación (turnos)",
+          "timeout": "Timeout por petición (s)",
+          "stream": "Habilitar streaming (solo sin tools)"
         }
       }
     }
   }
+}
