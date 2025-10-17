@@ -1,49 +1,88 @@
 {
-    "title": "Lemonade Conversation",
-    "config": {
-      "step": {
-        "user": {
-          "title": "Connect to Lemonade Server",
-          "description": "Enter your Lemonade Server base URL (OpenAI-compatible) and optional API Key.",
-          "data": {
-            "base_url": "Base URL (e.g. http://lemonade_server:8000/api/v1)",
-            "api_key": "API Key (if any)",
-            "verify_ssl": "Verify SSL",
-            "endpoint": "Preferred endpoint"
-          }
-        },
-        "model": {
-          "title": "Select model",
-          "data": {
-            "model": "Model"
-          }
+  "title": "Lemonade Conversation",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Lemonade Server",
+        "description": "Base URL (OpenAI-compatible) and API Key if applicable.",
+        "data": {
+          "base_url": "Base URL (e.g. http://lemonade_server:8000/api/v1)",
+          "api_key": "API Key (optional)",
+          "verify_ssl": "Verify SSL",
+          "endpoint": "Preferred endpoint"
         }
       },
-      "error": {
-        "conn": "Failed to connect to Lemonade Server.",
-        "auth": "Authentication failed (invalid API Key).",
-        "no_models": "No available models found."
+      "model": {
+        "title": "Select model",
+        "data": {
+          "model": "Model (id — recipe)"
+        }
       }
     },
-    "options": {
-      "step": {
-        "init": {
-          "title": "Lemonade Conversation Options",
-          "data": {
-            "agent_name": "Assistant name",
-            "system_prompt": "System prompt",
-            "temperature": "Temperature",
-            "top_p": "Top P",
-            "max_tokens": "Max output tokens",
-            "max_history": "Memory per conversation (turns)",
-            "enable_tools": "Enable tools to control devices",
-            "allowed_domains": "Allowed domains",
-            "tool_iteration_limit": "Tool iteration limit",
-            "timeout": "Request timeout (s)",
-            "stream": "Enable streaming (only chat/completions and no tools)",
-            "endpoint": "Preferred endpoint"
-          }
+    "error": {
+      "conn": "Failed to connect to Lemonade Server.",
+      "auth": "Authentication failed (invalid API Key).",
+      "no_models": "No available models found."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lemonade Conversation Options",
+        "menu_options": {
+          "general": "General",
+          "control": "Control & Tools",
+          "icl": "ICL (In-Context Learning)",
+          "prompt": "Prompt & Style",
+          "advanced": "Advanced"
+        }
+      },
+      "general": {
+        "title": "General",
+        "data": {
+          "model": "Model",
+          "endpoint": "Preferred endpoint",
+          "agent_name": "Assistant name"
+        }
+      },
+      "control": {
+        "title": "Control & Tools",
+        "data": {
+          "control_mode": "Control mode",
+          "enable_tools": "Enable tools (device control)",
+          "model_supports_tools": "Model supports tools (manual)",
+          "tool_follow_up_mode": "Tool follow-up mode (direct/llm)",
+          "allowed_domains": "Allowed domains (tools)",
+          "tool_iteration_limit": "Tool iteration limit"
+        }
+      },
+      "icl": {
+        "title": "ICL (In-Context Learning)",
+        "data": {
+          "enable_icl": "Enable ICL (few-shot examples)",
+          "icl_max_examples": "Examples to inject per turn",
+          "icl_auto_capture": "Auto-capture examples",
+          "icl_clear": "Clear stored examples"
+        }
+      },
+      "prompt": {
+        "title": "Prompt & Style",
+        "data": {
+          "system_prompt": "System prompt",
+          "refresh_system_every_turn": "Send system prompt every turn"
+        }
+      },
+      "advanced": {
+        "title": "Advanced",
+        "data": {
+          "temperature": "Creativity (temperature)",
+          "top_p": "Diversity (top_p)",
+          "max_tokens": "Max output tokens",
+          "max_history": "Memory per conversation (turns)",
+          "timeout": "Request timeout (s)",
+          "stream": "Enable streaming (only without tools)"
         }
       }
     }
   }
+}
