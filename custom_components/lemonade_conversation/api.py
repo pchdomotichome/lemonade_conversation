@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, Dict, List
 
 from aiohttp import ClientSession, ClientTimeout
 from homeassistant.core import HomeAssistant
@@ -11,8 +11,6 @@ from .const import ENDPOINT_CHAT, ENDPOINT_RESPONSES, ENDPOINT_COMPLETIONS
 
 
 class LemonadeClient:
-    """Cliente OpenAI-compatible para Lemonade Server."""
-
     def __init__(
         self,
         hass: HomeAssistant,
@@ -21,7 +19,6 @@ class LemonadeClient:
         verify_ssl: bool = True,
         timeout: int = 45,
     ) -> None:
-        # base_url debe incluir /api/v1, ej: http://lemonade_server:8000/api/v1
         self.hass = hass
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key or ""
@@ -56,6 +53,23 @@ class LemonadeClient:
             models = [str(m) for m in data]
         return models
 
+    async def async_list_models_detailed(self) -> List[Dict[str, str]]:
+        """Devuelve lista de modelos con id y recipe para mostrar en selector."""
+        url = f"{self.base_url}/models"
+        async with self._session().get(url, headers=self._headers, timeout=ClientTimeout(total=15)) as resp:
+            resp.raise_for_status()
+            data = await resp.json()
+        models: List[Dict[str, str]] = []
+        if isinstance(data, dict) and "data" in data and isinstance(data["data"], list):
+            for item in data["data"]:
+                mid = item.get("id")
+                recipe = item.get("recipe", "unknown")
+                if isinstance(mid, str):
+                    models.append({"id": mid, "recipe": recipe})
+        if not models and isinstance(data, list):
+            models = [{"id": str(m), "recipe": "unknown"} for m in data]
+        return models
+
     async def async_chat(
         self,
         *,
@@ -68,13 +82,15 @@ class LemonadeClient:
         top_p: float = 1.0,
         max_tokens: int | None = None,
         stream: bool = False,
+        request_timeout: int | None = None,
     ) -> dict[str, Any]:
-        """Llama al endpoint seleccionado. Devuelve un dict estilo OpenAI."""
+        timeout = ClientTimeout(total=request_timeout or self.timeout)
+
         if endpoint == ENDPOINT_RESPONSES:
             url = f"{self.base_url}/responses"
             payload: dict[str, Any] = {
                 "model": model,
-                "input": messages,  # Responses suele aceptar 'input' con mensajes
+                "input": messages,
                 "temperature": temperature,
                 "top_p": top_p,
             }
@@ -84,45 +100,24 @@ class LemonadeClient:
                 payload["tool_choice"] = tool_choice
             if max_tokens is not None:
                 payload["max_output_tokens"] = max_tokens
-            # Streaming para responses puede variar; por simplicidad, no se activa aquí
-            stream = False
 
-            async with self._session().post(
-                url, headers=self._headers, json=payload, timeout=ClientTimeout(total=self.timeout)
-            ) as resp:
+            async with self._session().post(url, headers=self._headers, json=payload, timeout=timeout) as resp:
                 resp.raise_for_status()
                 return await resp.json()
 
         if endpoint == ENDPOINT_COMPLETIONS:
-            # Fallback legacy: convertir mensajes a prompt plano
             url = f"{self.base_url}/completions"
-            prompt_parts: list[str] = []
-            for m in messages:
-                role = m.get("role", "user")
-                content = m.get("content", "")
-                prompt_parts.append(f"{role.upper()}: {content}")
-            prompt = "\n".join(prompt_parts)
-            payload = {
-                "model": model,
-                "prompt": prompt,
-                "temperature": temperature,
-                "top_p": top_p,
-            }
+            prompt = "\n".join(f"{m.get('role','user').upper()}: {m.get('content','')}" for m in messages)
+            payload = {"model": model, "prompt": prompt, "temperature": temperature, "top_p": top_p}
             if max_tokens is not None:
                 payload["max_tokens"] = max_tokens
-            # completions no soporta tools
-            stream = False
 
-            async with self._session().post(
-                url, headers=self._headers, json=payload, timeout=ClientTimeout(total=self.timeout)
-            ) as resp:
+            async with self._session().post(url, headers=self._headers, json=payload, timeout=timeout) as resp:
                 resp.raise_for_status()
                 data = await resp.json()
-                # Normalizar a formato choices/message.content
                 text = data.get("choices", [{}])[0].get("text", "")
                 return {"choices": [{"message": {"content": text}}]}
 
-        # Por defecto: chat/completions (recomendado)
         url = f"{self.base_url}/chat/completions"
         payload: dict[str, Any] = {
             "model": model,
@@ -140,17 +135,12 @@ class LemonadeClient:
             payload["stream"] = True
 
         if not stream:
-            async with self._session().post(
-                url, headers=self._headers, json=payload, timeout=ClientTimeout(total=self.timeout)
-            ) as resp:
+            async with self._session().post(url, headers=self._headers, json=payload, timeout=timeout) as resp:
                 resp.raise_for_status()
                 return await resp.json()
 
-        # Streaming estilo OpenAI (acumula en memoria y normaliza)
         assistant_text = ""
-        async with self._session().post(
-            url, headers=self._headers, json=payload, timeout=ClientTimeout(total=self.timeout)
-        ) as resp:
+        async with self._session().post(url, headers=self._headers, json=payload, timeout=timeout) as resp:
             resp.raise_for_status()
             async for raw_line in resp.content:
                 if not raw_line:
